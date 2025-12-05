@@ -1,24 +1,26 @@
 // Firebase Configuration
-// To enable cloud sync, create a Firebase project at https://console.firebase.google.com/
-// Then copy your config here and uncomment the code below
+// Configuration is loaded from environment variables (.env.local)
+// See .env.example for the required variables
 
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 
-// Replace these with your Firebase config values
-// You can find these in your Firebase project settings
+// Load Firebase config from environment variables
+// Vite uses VITE_ prefix for environment variables
 const firebaseConfig = {
-    apiKey: "AIzaSyB7GwjUtnIbwAYBrMwY9_YQY4N7QiIUW20",
-    authDomain: "inventary-donations.firebaseapp.com",
-    databaseURL: "https://inventary-donations-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "inventary-donations",
-    storageBucket: "inventary-donations.firebasestorage.app",
-    messagingSenderId: "278513112462",
-    appId: "1:278513112462:web:ca7bda44def555d9b580df"
-  };
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+}
 
 // Check if Firebase is configured
-const isFirebaseConfigured = firebaseConfig.apiKey && firebaseConfig.apiKey !== "YOUR_API_KEY"
+const isFirebaseConfigured = firebaseConfig.apiKey && 
+  firebaseConfig.apiKey !== "YOUR_API_KEY" &&
+  firebaseConfig.apiKey !== undefined
 
 let app = null
 let db = null
