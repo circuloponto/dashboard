@@ -66,7 +66,10 @@ npm run dev
 
 The default password is: `ines2024`
 
-You can change this in `src/components/Login.jsx` by modifying the `CORRECT_PASSWORD` constant.
+You can change the password by:
+1. Adding `VITE_LOGIN_PASSWORD=your-new-password` to your `.env.local` file
+2. Or setting it as an environment variable in Vercel (for production)
+3. If not set, it defaults to `ines2024`
 
 ### Data Storage
 

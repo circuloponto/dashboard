@@ -6,8 +6,9 @@ const Login = ({ setIsAuthenticated }) => {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  // Default password - in production, this should be hashed and stored securely
-  const CORRECT_PASSWORD = 'ines2024'
+  // Password from environment variable, fallback to default
+  // Set VITE_LOGIN_PASSWORD in .env.local or Vercel environment variables
+  const CORRECT_PASSWORD = import.meta.env.VITE_LOGIN_PASSWORD || 'ines2024'
 
   const handleSubmit = (e) => {
     e.preventDefault()
