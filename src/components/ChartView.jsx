@@ -15,6 +15,7 @@ const COLORS = [
 const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
   const [tooltip, setTooltip] = useState({ show: false, itemId: null, x: 0, y: 0 })
   const tooltipRef = useRef(null)
+  const mousePositionRef = useRef({ x: 0, y: 0 })
   
   const chartData = items
     .filter(item => item.count > 0)
@@ -40,6 +41,47 @@ const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
     }, 100)
   }
 
+  // Track mouse position globally
+  useEffect(() => {
+    const updateMousePosition = (e) => {
+      mousePositionRef.current = { x: e.clientX, y: e.clientY }
+    }
+    document.addEventListener('mousemove', updateMousePosition)
+    return () => document.removeEventListener('mousemove', updateMousePosition)
+  }, [])
+
+  const handlePieClick = (data, index, e) => {
+    console.log('handlePieClick called:', { data, index, e })
+    // Recharts Pie onClick receives: (data, index, e) where data is the clicked entry
+    const clickedData = data || chartData[index]
+    console.log('Clicked data:', clickedData)
+    
+    if (clickedData?.id) {
+      // Use tracked mouse position as fallback
+      const x = mousePositionRef.current.x || window.innerWidth / 2
+      const y = mousePositionRef.current.y || window.innerHeight / 2
+      
+      console.log('Setting tooltip at:', x, y, 'for item:', clickedData.id)
+      setTooltip({ show: true, itemId: clickedData.id, x: x + 20, y: y - 50 })
+    }
+  }
+
+  const handleBarClick = (data, index, e) => {
+    console.log('handleBarClick called:', { data, index, e })
+    // Recharts Bar onClick receives: (data, index, e) where data is the clicked entry
+    const clickedData = data || chartData[index]
+    console.log('Clicked bar data:', clickedData)
+    
+    if (clickedData?.id) {
+      // Use tracked mouse position as fallback
+      const x = mousePositionRef.current.x || window.innerWidth / 2
+      const y = mousePositionRef.current.y || window.innerHeight / 2
+      
+      console.log('Setting tooltip at:', x, y, 'for item:', clickedData.id)
+      setTooltip({ show: true, itemId: clickedData.id, x: x + 20, y: y - 50 })
+    }
+  }
+
   const handleTooltipEnter = () => {
     // Keep tooltip open when mouse enters it
     setTooltip(prev => ({ ...prev, show: true }))
@@ -48,6 +90,7 @@ const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
   const handleTooltipLeave = () => {
     setTooltip({ show: false, itemId: null, x: 0, y: 0 })
   }
+
 
   // Handle click outside to dismiss tooltip
   useEffect(() => {
@@ -125,44 +168,46 @@ const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
     return (
       <div
         ref={tooltipRef}
-        className="fixed z-50 bg-white rounded-lg shadow-xl border border-blue-400 p-2 min-w-[140px]"
+        className="fixed z-50 bg-white rounded-lg shadow-xl border-2 border-blue-500 p-3 min-w-[160px]"
         style={{
-          left: `${Math.min(tooltip.x + 10, window.innerWidth - 160)}px`,
-          top: `${Math.min(tooltip.y + 10, window.innerHeight - 100)}px`,
+          left: `${Math.min(tooltip.x, window.innerWidth - 180)}px`,
+          top: `${Math.min(tooltip.y - 80, window.innerHeight - 120)}px`,
+          zIndex: 9999
         }}
         onMouseEnter={handleTooltipEnter}
         onMouseLeave={handleTooltipLeave}
-        onTouchStart={handleTooltipEnter}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="text-center mb-2">
-          <div className="text-xl mb-1">{item.icon}</div>
-          <div className="font-semibold text-gray-800 text-sm">{item.name}</div>
-          <div className="text-xs text-gray-600">
-            Qtd: <span className="font-bold text-blue-600">{item.value}</span>
+        <div className="text-center mb-3">
+          <div className="text-2xl mb-1">{item.icon}</div>
+          <div className="font-semibold text-gray-800">{item.name}</div>
+          <div className="text-sm text-gray-600 mt-1">
+            Quantidade: <span className="font-bold text-blue-600 text-lg">{item.value}</span>
           </div>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex gap-2">
           <button
             onClick={(e) => {
               e.stopPropagation()
+              e.preventDefault()
               if (onDecrement && item.value > 0) {
                 onDecrement(item.id)
               }
             }}
             disabled={item.value === 0}
-            className="flex-1 bg-red-500 text-white font-bold py-1.5 px-2 rounded text-xs hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 bg-red-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             -1
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation()
+              e.preventDefault()
               if (onIncrement) {
                 onIncrement(item.id)
               }
             }}
-            className="flex-1 bg-green-500 text-white font-bold py-1.5 px-2 rounded text-xs hover:bg-green-600 transition-colors"
+            className="flex-1 bg-green-500 text-white font-bold py-2 px-3 rounded-lg hover:bg-green-600 transition-colors"
           >
             +1
           </button>
@@ -228,26 +273,24 @@ const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
               dataKey="value"
               animationDuration={500}
               style={{ cursor: 'pointer' }}
+              onClick={handlePieClick}
             >
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
                   style={{ cursor: 'pointer' }}
-                  onMouseEnter={(e) => handleItemHover(entry.id, e)}
-                  onMouseLeave={handleItemLeave}
-                  onTouchStart={(e) => handleItemHover(entry.id, e)}
                 />
               ))}
             </Pie>
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} trigger="hover" />
           </PieChart>
           </ResponsiveContainer>
         </div>
         <InteractiveTooltip />
         <CustomLegend payload={legendPayload} />
         <p className="text-center text-sm text-gray-500 mt-4">
-          💡 Passe o mouse sobre os elementos do gráfico para ver os controles
+          💡 Clique nos elementos do gráfico para ver os controles
         </p>
       </div>
     )
@@ -279,21 +322,19 @@ const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
               }}
             />
             <YAxis tick={{ fill: '#6b7280' }} />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip content={<CustomTooltip />} trigger="hover" />
             <Bar
               dataKey="value"
               radius={[8, 8, 0, 0]}
               animationDuration={500}
               style={{ cursor: 'pointer' }}
+              onClick={handleBarClick}
             >
               {chartData.map((entry, index) => (
                 <Cell
                   key={`cell-${index}`}
                   fill={COLORS[index % COLORS.length]}
                   style={{ cursor: 'pointer' }}
-                  onMouseEnter={(e) => handleItemHover(entry.id, e)}
-                  onMouseLeave={handleItemLeave}
-                  onTouchStart={(e) => handleItemHover(entry.id, e)}
                 />
               ))}
             </Bar>
@@ -303,7 +344,7 @@ const ChartView = ({ items, chartType, onIncrement, onDecrement }) => {
       <InteractiveTooltip />
       <CustomLegend payload={barLegendPayload} />
       <p className="text-center text-sm text-gray-500 mt-4">
-        💡 Passe o mouse sobre as barras para ver os controles
+        💡 Clique nas barras para ver os controles
       </p>
     </div>
   )
