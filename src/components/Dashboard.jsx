@@ -114,7 +114,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
   }
 
   const handleReset = () => {
-    if (window.confirm('Tem certeza que deseja resetar todos os contadores?')) {
+    if (window.confirm('Tem certeza que deseja apagar todos os contadores?')) {
       const resetItems = items.map((item) => ({ ...item, count: 0 }))
       setItems(resetItems)
       saveItems(resetItems)
@@ -186,7 +186,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
                 onClick={handleReset}
                 className="btn-secondary"
               >
-                Resetar Contadores
+                Apagar tudo
               </button>
               <button
                 onClick={handleLogout}
