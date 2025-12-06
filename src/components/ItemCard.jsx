@@ -1,7 +1,7 @@
-const ItemCard = ({ item, onAdd, onDelete }) => {
+const ItemCard = ({ item, onAdd, onDecrement, onDelete }) => {
   const handleCardClick = (e) => {
-    // Don't trigger add if clicking delete button
-    if (e.target.closest('.delete-button')) {
+    // Don't trigger add if clicking action buttons
+    if (e.target.closest('.action-button')) {
       return
     }
     onAdd()
@@ -15,31 +15,87 @@ const ItemCard = ({ item, onAdd, onDelete }) => {
       {/* Background gradient */}
       <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-10 group-hover:opacity-20 transition-opacity duration-300`}></div>
       
-      {/* Delete button for custom items */}
-      {onDelete && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete()
-          }}
-          className="delete-button absolute top-2 right-2 z-20 bg-red-500 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-lg"
-          title="Remover item"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      {/* Action buttons - appear on hover */}
+      <div className="absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        {/* Decrement button */}
+        {onDecrement && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDecrement()
+            }}
+            disabled={item.count === 0}
+            className="action-button bg-orange-500 text-white rounded-full p-1.5 hover:bg-orange-600 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            title="Diminuir quantidade"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      )}
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M20 12H4"
+              />
+            </svg>
+          </button>
+        )}
+        
+        {/* Increment button */}
+        {onAdd && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onAdd()
+            }}
+            className="action-button bg-green-500 text-white rounded-full p-1.5 hover:bg-green-600 shadow-lg transition-all"
+            title="Aumentar quantidade"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          </button>
+        )}
+        
+        {/* Delete button */}
+        {onDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onDelete()
+            }}
+            className="action-button bg-red-500 text-white rounded-full p-1.5 hover:bg-red-600 shadow-lg transition-all"
+            title="Remover item"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
       
       {/* Content */}
       <div className="relative z-10">
@@ -68,7 +124,7 @@ const ItemCard = ({ item, onAdd, onDelete }) => {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          Clique para adicionar
+          Clique para adicionar ou use os botões ao passar o mouse
         </div>
       </div>
 

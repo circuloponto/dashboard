@@ -113,6 +113,18 @@ const Dashboard = ({ setIsAuthenticated }) => {
     })
   }
 
+  const handleDecrementItem = (itemId) => {
+    setItems((prevItems) => {
+      const updatedItems = prevItems.map((item) =>
+        item.id === itemId 
+          ? { ...item, count: Math.max(0, item.count - 1) } 
+          : item
+      )
+      saveItems(updatedItems)
+      return updatedItems
+    })
+  }
+
   const handleReset = () => {
     if (window.confirm('Tem certeza que deseja apagar todos os contadores?')) {
       const resetItems = items.map((item) => ({ ...item, count: 0 }))
@@ -146,7 +158,10 @@ const Dashboard = ({ setIsAuthenticated }) => {
   }
 
   const handleDeleteItem = (itemId) => {
-    if (window.confirm('Tem certeza que deseja remover este item? Esta ação não pode ser desfeita.')) {
+    const itemToDelete = items.find(item => item.id === itemId)
+    const itemName = itemToDelete ? itemToDelete.name : 'este item'
+    
+    if (window.confirm(`Tem certeza que deseja remover "${itemName}"? Esta ação não pode ser desfeita e o contador será perdido.`)) {
       setItems((prevItems) => {
         const updatedItems = prevItems.filter(item => item.id !== itemId)
         saveItems(updatedItems)
@@ -227,7 +242,12 @@ const Dashboard = ({ setIsAuthenticated }) => {
               </button>
             </div>
           </div>
-          <ChartView items={items} chartType={chartType} />
+          <ChartView 
+            items={items} 
+            chartType={chartType}
+            onIncrement={handleAddItem}
+            onDecrement={handleDecrementItem}
+          />
         </div>
 
         {/* Items Grid */}
@@ -262,7 +282,8 @@ const Dashboard = ({ setIsAuthenticated }) => {
                 key={item.id}
                 item={item}
                 onAdd={() => handleAddItem(item.id)}
-                onDelete={item.id >= 1000 ? () => handleDeleteItem(item.id) : null}
+                onDecrement={() => handleDecrementItem(item.id)}
+                onDelete={() => handleDeleteItem(item.id)}
               />
             ))}
           </div>
