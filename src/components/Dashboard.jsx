@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import logo from '../img/Logo Bon-dja_redondo.png'
 import ItemCard from './ItemCard'
 import ChartView from './ChartView'
 import AddItemModal from './AddItemModal'
@@ -21,7 +22,20 @@ const Dashboard = ({ setIsAuthenticated }) => {
   const [items, setItems] = useState([])
   const [chartType, setChartType] = useState('pie') // 'pie' or 'bar'
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [showContactToast, setShowContactToast] = useState(false)
+  const toastTimerRef = useRef(null)
   const navigate = useNavigate()
+
+  const triggerContactToast = useCallback(() => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+    setShowContactToast(true)
+    toastTimerRef.current = setTimeout(() => setShowContactToast(false), 4000)
+  }, [])
+
+  const dismissContactToast = useCallback(() => {
+    setShowContactToast(false)
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
+  }, [])
 
   useEffect(() => {
     let unsubscribe = () => {}
@@ -104,6 +118,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
   }, [])
 
   const handleAddItem = (itemId) => {
+    triggerContactToast()
     setItems((prevItems) => {
       const updatedItems = prevItems.map((item) =>
         item.id === itemId ? { ...item, count: item.count + 1 } : item
@@ -178,7 +193,13 @@ const Dashboard = ({ setIsAuthenticated }) => {
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
+            <div className="flex items-center gap-4">
+              <img
+                src={logo}
+                alt="Logo Bon-dja"
+                className="w-14 h-14 rounded-full object-cover"
+              />
+              <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
                 Dashboard de Doações de Alimentos
               </h1>
@@ -196,6 +217,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
                 )}
               </div>
             </div>
+            </div>
             <div className="flex gap-3">
               <button
                 onClick={handleReset}
@@ -209,6 +231,53 @@ const Dashboard = ({ setIsAuthenticated }) => {
               >
                 Sair
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Introductory Section */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">O Projeto Bon-dja</h2>
+          <div className="text-gray-700 space-y-3 leading-relaxed">
+            <p>
+              O Bon-dja é um projeto de missão e intervenção social que apoia crianças e jovens em situação de vulnerabilidade em São Tomé. Em 2026, uma equipa de 30 voluntárias — jovens universitárias do Porto e Braga — dedicará duas semanas do verão ao trabalho no terreno com a Associação ARCAR, uma instituição que, desde 1991, acolhe crianças e jovens em situação de risco.
+            </p>
+            <p>
+              O nosso projeto distingue-se pela continuidade. Ao longo de todo o ano acompanhamos a instituição, preparamos a missão e angariamos recursos essenciais para garantir um impacto real e duradouro.
+            </p>
+            <p className="font-semibold italic text-gray-800">
+              O nosso lema é: "1 ano de formação, 2 semanas em ação, 1 vida em missão."
+            </p>
+            <p>
+              <span className="font-semibold">Como pode ajudar?</span> Estamos a angariar alimentos não perecíveis para levar connosco e entregar diretamente às crianças, jovens e famílias apoiados pela ARCAR. Cada contributo conta.
+            </p>
+            <p className="font-semibold text-gray-800">
+              Cada gesto faz a diferença.<br />
+              Cada embalagem ajuda-nos a transformar realidades.
+            </p>
+          </div>
+
+          <div className="mt-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-3">Preços:</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+              <div className="bg-blue-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Kit famílias</span> — 37,00 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Arroz</span> — 1,50 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Água</span> — 1,00 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Feijão</span> — 1,20 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Massa</span> — 1,00 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Óleo</span> — 1,90 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Açúcar</span> — 1,00 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Sal</span> — 0,55 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Atum</span> — 1,20 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Bolachas</span> — 1,65 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Grão</span> — 1,20 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Legumes em conserva</span></div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Milho</span> — 1,15 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Tomate</span> — 0,80 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Cogumelos</span> — 2,20 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Azeite</span> — 4,00 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Vinagre</span> — 0,90 €</div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Salsicha</span> — 1,20 €</div>
             </div>
           </div>
         </div>
@@ -295,6 +364,33 @@ const Dashboard = ({ setIsAuthenticated }) => {
           onClose={() => setIsAddModalOpen(false)}
           onAdd={handleAddNewItem}
         />
+      </div>
+
+      {/* Contact toast notification */}
+      <div
+        className={`fixed top-6 right-6 z-50 transition-all duration-500 ease-in-out ${
+          showContactToast
+            ? 'translate-x-0 opacity-100'
+            : 'translate-x-full opacity-0 pointer-events-none'
+        }`}
+      >
+        <div className="bg-white rounded-xl shadow-2xl border border-gray-200 p-4 max-w-xs">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="font-semibold text-gray-800 mb-2">Para contribuir, contacte:</p>
+              <p className="text-gray-700 text-sm">+351 927 555 443</p>
+              <p className="text-gray-700 text-sm">+351 932 053 042</p>
+            </div>
+            <button
+              onClick={dismissContactToast}
+              className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   )

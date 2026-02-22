@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import logo from '../img/Logo Bon-dja_redondo.png'
 
 const Login = ({ setIsAuthenticated }) => {
   const [password, setPassword] = useState('')
@@ -28,21 +29,11 @@ const Login = ({ setIsAuthenticated }) => {
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-6">
           <div className="text-center">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-              <svg
-                className="w-8 h-8 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                />
-              </svg>
-            </div>
+            <img
+              src={logo}
+              alt="Logo Bon-dja"
+              className="mx-auto w-24 h-24 rounded-full object-cover mb-4"
+            />
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
               Dashboard de Doações
             </h1>
