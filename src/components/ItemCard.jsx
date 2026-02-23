@@ -106,10 +106,15 @@ const ItemCard = ({ item, onAdd, onDecrement, onDelete }) => {
           </div>
         </div>
         
-        <h3 className="text-lg font-semibold text-gray-800 mb-2">
+        <h3 className="text-lg font-semibold text-gray-800 mb-1">
           {item.name}
         </h3>
-        
+        {item.price != null && (
+          <p className="text-sm font-medium text-blue-600 mb-2">
+            {item.price.toFixed(2).replace('.', ',')} €
+          </p>
+        )}
+
         <div className="flex items-center text-sm text-gray-600">
           <svg
             className="w-4 h-4 mr-1"

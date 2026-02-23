@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
 import logo from '../img/Logo Bon-dja_redondo.png'
 import ItemCard from './ItemCard'
 import ChartView from './ChartView'
@@ -8,23 +7,33 @@ import { getItems, saveItems, subscribeToItems } from '../services/dataService'
 import { isFirebaseConfigured } from '../config/firebase'
 
 const INITIAL_ITEMS = [
-  { id: 1, name: 'Arroz', icon: '🌾', color: 'from-amber-400 to-amber-600' },
-  { id: 2, name: 'Leite', icon: '🥛', color: 'from-blue-300 to-blue-500' },
-  { id: 3, name: 'Água', icon: '💧', color: 'from-cyan-400 to-cyan-600' },
-  { id: 4, name: 'Feijão', icon: '🫘', color: 'from-orange-400 to-orange-600' },
-  { id: 5, name: 'Biscoitos', icon: '🍪', color: 'from-yellow-400 to-yellow-600' },
-  { id: 6, name: 'Massa', icon: '🍝', color: 'from-yellow-300 to-yellow-500' },
-  { id: 7, name: 'Óleo', icon: '🫒', color: 'from-green-400 to-green-600' },
-  { id: 8, name: 'Açúcar', icon: '🍬', color: 'from-pink-300 to-pink-500' },
+  { id: 1, name: 'Kit Famílias', icon: '📦', color: 'from-blue-400 to-blue-600', price: 37.00 },
+  { id: 2, name: 'Arroz', icon: '🌾', color: 'from-amber-400 to-amber-600', price: 1.50 },
+  { id: 3, name: 'Água', icon: '💧', color: 'from-cyan-400 to-cyan-600', price: 1.00 },
+  { id: 4, name: 'Feijão', icon: '🫘', color: 'from-orange-400 to-orange-600', price: 1.20 },
+  { id: 5, name: 'Massa', icon: '🍝', color: 'from-yellow-300 to-yellow-500', price: 1.00 },
+  { id: 6, name: 'Óleo', icon: '🫒', color: 'from-green-400 to-green-600', price: 1.90 },
+  { id: 7, name: 'Açúcar', icon: '🍬', color: 'from-pink-300 to-pink-500', price: 1.00 },
+  { id: 8, name: 'Sal', icon: '🧂', color: 'from-gray-300 to-gray-500', price: 0.55 },
+  { id: 9, name: 'Atum', icon: '🐟', color: 'from-blue-400 to-blue-600', price: 1.20 },
+  { id: 10, name: 'Bolachas', icon: '🍪', color: 'from-yellow-400 to-yellow-600', price: 1.65 },
+  { id: 11, name: 'Grão', icon: '🟤', color: 'from-amber-300 to-amber-500', price: 1.20 },
+  { id: 12, name: 'Legumes em conserva', icon: '🥫', color: 'from-green-300 to-green-500', price: 2.00 },
+  { id: 13, name: 'Milho', icon: '🌽', color: 'from-yellow-400 to-yellow-600', price: 1.15 },
+  { id: 14, name: 'Tomate', icon: '🍅', color: 'from-red-400 to-red-600', price: 0.80 },
+  { id: 15, name: 'Cogumelos', icon: '🍄', color: 'from-stone-400 to-stone-600', price: 2.20 },
+  { id: 16, name: 'Azeite', icon: '🫒', color: 'from-lime-400 to-lime-600', price: 4.00 },
+  { id: 17, name: 'Vinagre', icon: '🍶', color: 'from-rose-300 to-rose-500', price: 0.90 },
+  { id: 18, name: 'Salsicha', icon: '🌭', color: 'from-red-300 to-red-500', price: 1.20 },
 ]
 
-const Dashboard = ({ setIsAuthenticated }) => {
+const Dashboard = () => {
   const [items, setItems] = useState([])
   const [chartType, setChartType] = useState('pie') // 'pie' or 'bar'
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [showContactToast, setShowContactToast] = useState(false)
+  const [sessionAdditions, setSessionAdditions] = useState({})
   const toastTimerRef = useRef(null)
-  const navigate = useNavigate()
 
   const triggerContactToast = useCallback(() => {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current)
@@ -72,39 +81,30 @@ const Dashboard = ({ setIsAuthenticated }) => {
     }
 
     const processAndSetItems = (parsedItems) => {
-      // Migrate old "Macarrão" to "Massa" and sync with current INITIAL_ITEMS
-      let processedItems = parsedItems.map(savedItem => {
-        // Find matching item in INITIAL_ITEMS by ID
-        const currentItem = INITIAL_ITEMS.find(item => item.id === savedItem.id)
-        
-        if (currentItem) {
-          // Update with current item properties but keep the count
-          return {
-            ...currentItem,
-            count: savedItem.count || 0
-          }
-        }
-        
-        // If item not found, return saved item (for backwards compatibility)
-        return savedItem
+      // Build a map of saved counts by name (normalized to lowercase)
+      const savedCounts = {}
+      parsedItems.forEach(savedItem => {
+        const name = savedItem.name.toLowerCase().trim()
+        savedCounts[name] = (savedCounts[name] || 0) + (savedItem.count || 0)
       })
-      
-      // Ensure all INITIAL_ITEMS are present (in case new items were added)
-      INITIAL_ITEMS.forEach(initialItem => {
-        const exists = processedItems.find(item => item.id === initialItem.id)
-        if (!exists) {
-          processedItems.push({ ...initialItem, count: 0 })
-        }
-      })
-      
-      // Sort by ID to maintain order
-      processedItems.sort((a, b) => a.id - b.id)
-      
-      setItems(processedItems)
-      // Save processed items back (only if not using real-time sync)
-      if (!isFirebaseConfigured) {
-        saveItems(processedItems)
+      // Also match common name variations
+      if (savedCounts['macarrão']) {
+        savedCounts['massa'] = (savedCounts['massa'] || 0) + savedCounts['macarrão']
       }
+      if (savedCounts['biscoitos'] || savedCounts['bolacha maria']) {
+        savedCounts['bolachas'] = (savedCounts['bolachas'] || 0) + (savedCounts['biscoitos'] || 0) + (savedCounts['bolacha maria'] || 0)
+      }
+
+      // Create items from INITIAL_ITEMS, carrying over saved counts by name
+      const processedItems = INITIAL_ITEMS.map(initialItem => {
+        const name = initialItem.name.toLowerCase().trim()
+        const count = savedCounts[name] || 0
+        return { ...initialItem, count }
+      })
+
+      setItems(processedItems)
+      // Save clean data back to sync prices and remove orphaned items
+      saveItems(processedItems)
     }
 
     loadAndSyncItems()
@@ -119,6 +119,10 @@ const Dashboard = ({ setIsAuthenticated }) => {
 
   const handleAddItem = (itemId) => {
     triggerContactToast()
+    setSessionAdditions(prev => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 0) + 1
+    }))
     setItems((prevItems) => {
       const updatedItems = prevItems.map((item) =>
         item.id === itemId ? { ...item, count: item.count + 1 } : item
@@ -129,6 +133,11 @@ const Dashboard = ({ setIsAuthenticated }) => {
   }
 
   const handleDecrementItem = (itemId) => {
+    setSessionAdditions(prev => {
+      const current = prev[itemId] || 0
+      if (current <= 0) return prev
+      return { ...prev, [itemId]: current - 1 }
+    })
     setItems((prevItems) => {
       const updatedItems = prevItems.map((item) =>
         item.id === itemId 
@@ -146,12 +155,6 @@ const Dashboard = ({ setIsAuthenticated }) => {
       setItems(resetItems)
       saveItems(resetItems)
     }
-  }
-
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated')
-    setIsAuthenticated(false)
-    navigate('/login')
   }
 
   const handleAddNewItem = (newItem) => {
@@ -186,6 +189,10 @@ const Dashboard = ({ setIsAuthenticated }) => {
   }
 
   const totalItems = items.reduce((sum, item) => sum + item.count, 0)
+  const sessionTotalPrice = items.reduce((sum, item) => {
+    const addedCount = sessionAdditions[item.id] || 0
+    return sum + (addedCount * (item.price || 0))
+  }, 0)
 
   return (
     <div className="min-h-screen p-4 md:p-8">
@@ -224,12 +231,6 @@ const Dashboard = ({ setIsAuthenticated }) => {
                 className="btn-secondary"
               >
                 Apagar tudo
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-              >
-                Sair
               </button>
             </div>
           </div>
@@ -271,7 +272,7 @@ const Dashboard = ({ setIsAuthenticated }) => {
               <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Atum</span> — 1,20 €</div>
               <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Bolachas</span> — 1,65 €</div>
               <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Grão</span> — 1,20 €</div>
-              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Legumes em conserva</span></div>
+              <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Legumes em conserva</span> — 2,00 €</div>
               <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Milho</span> — 1,15 €</div>
               <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Tomate</span> — 0,80 €</div>
               <div className="bg-gray-50 rounded-lg px-3 py-2 text-sm"><span className="font-semibold">Cogumelos</span> — 2,20 €</div>
@@ -364,6 +365,27 @@ const Dashboard = ({ setIsAuthenticated }) => {
           onClose={() => setIsAddModalOpen(false)}
           onAdd={handleAddNewItem}
         />
+      </div>
+
+      {/* Contacts sidebar */}
+      <div className="hidden lg:block fixed top-6 right-6 z-40">
+        <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 w-56">
+          <h3 className="font-bold text-gray-800 text-sm mb-3 border-b pb-2">Contactos</h3>
+          <ul className="space-y-2 text-sm">
+            <li className="flex justify-between"><span className="text-gray-700">Ana Rita</span><a href="tel:+351967167604" className="text-blue-600 hover:underline">967 167 604</a></li>
+            <li className="flex justify-between"><span className="text-gray-700">Cláudia</span><a href="tel:+351927555443" className="text-blue-600 hover:underline">927 555 443</a></li>
+            <li className="flex justify-between"><span className="text-gray-700">Mariana</span><a href="tel:+351939055504" className="text-blue-600 hover:underline">939 055 504</a></li>
+            <li className="flex justify-between"><span className="text-gray-700">Núria</span><a href="tel:+351969536576" className="text-blue-600 hover:underline">969 536 576</a></li>
+            <li className="flex justify-between"><span className="text-gray-700">Verónica</span><a href="tel:+351934009699" className="text-blue-600 hover:underline">934 009 699</a></li>
+            <li className="flex justify-between"><span className="text-gray-700">Inês</span><a href="tel:+351932053042" className="text-blue-600 hover:underline">932 053 042</a></li>
+          </ul>
+          {sessionTotalPrice > 0 && (
+            <div className="mt-3 pt-3 border-t border-gray-200">
+              <p className="text-xs text-gray-500">A sua contribuição</p>
+              <p className="text-lg font-bold text-green-600">{sessionTotalPrice.toFixed(2).replace('.', ',')} €</p>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Contact toast notification */}
