@@ -1,4 +1,4 @@
-const ItemCard = ({ item, onAdd, onDecrement, onDelete }) => {
+const ItemCard = ({ item, onAdd, onDelete }) => {
   const handleCardClick = (e) => {
     // Don't trigger add if clicking action buttons
     if (e.target.closest('.action-button')) {
@@ -17,33 +17,6 @@ const ItemCard = ({ item, onAdd, onDecrement, onDelete }) => {
       
       {/* Action buttons - appear on hover */}
       <div className="absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        {/* Decrement button */}
-        {onDecrement && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              onDecrement()
-            }}
-            disabled={item.count === 0}
-            className="action-button bg-orange-500 text-white rounded-full p-1.5 hover:bg-orange-600 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            title="Diminuir quantidade"
-          >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M20 12H4"
-              />
-            </svg>
-          </button>
-        )}
-        
         {/* Increment button */}
         {onAdd && (
           <button

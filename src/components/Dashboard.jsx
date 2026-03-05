@@ -352,7 +352,7 @@ const Dashboard = () => {
                 key={item.id}
                 item={item}
                 onAdd={() => handleAddItem(item.id)}
-                onDecrement={() => handleDecrementItem(item.id)}
+
                 onDelete={() => handleDeleteItem(item.id)}
               />
             ))}
