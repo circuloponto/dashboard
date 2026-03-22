@@ -149,13 +149,6 @@ const Dashboard = () => {
     })
   }
 
-  const handleReset = () => {
-    if (window.confirm('Tem certeza que deseja apagar todos os contadores?')) {
-      const resetItems = items.map((item) => ({ ...item, count: 0 }))
-      setItems(resetItems)
-      saveItems(resetItems)
-    }
-  }
 
   const handleAddNewItem = (newItem) => {
     // Generate new ID (find max ID and add 1, or start from 1000 for custom items)
@@ -175,18 +168,6 @@ const Dashboard = () => {
     })
   }
 
-  const handleDeleteItem = (itemId) => {
-    const itemToDelete = items.find(item => item.id === itemId)
-    const itemName = itemToDelete ? itemToDelete.name : 'este item'
-    
-    if (window.confirm(`Tem certeza que deseja remover "${itemName}"? Esta ação não pode ser desfeita e o contador será perdido.`)) {
-      setItems((prevItems) => {
-        const updatedItems = prevItems.filter(item => item.id !== itemId)
-        saveItems(updatedItems)
-        return updatedItems
-      })
-    }
-  }
 
   const totalItems = items.reduce((sum, item) => sum + item.count, 0)
   const sessionTotalPrice = items.reduce((sum, item) => {
@@ -224,14 +205,6 @@ const Dashboard = () => {
                 )}
               </div>
             </div>
-            </div>
-            <div className="flex gap-3">
-              <button
-                onClick={handleReset}
-                className="btn-secondary"
-              >
-                Apagar tudo
-              </button>
             </div>
           </div>
         </div>
@@ -352,8 +325,6 @@ const Dashboard = () => {
                 key={item.id}
                 item={item}
                 onAdd={() => handleAddItem(item.id)}
-
-                onDelete={() => handleDeleteItem(item.id)}
               />
             ))}
           </div>
